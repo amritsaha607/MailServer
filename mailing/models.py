@@ -14,6 +14,13 @@ class User(models.Model):
     def __str__(self):
         return self.email
 
+    def get_json_data(self):
+        return {
+            'name': self.name,
+            'email': self.email,
+            'dob': self.dob,
+        }
+
 
 class MailEvent(models.Model):
     chain_id = models.CharField(max_length=36, db_index=True)
