@@ -24,9 +24,7 @@ class MailEvent(models.Model):
                                on_delete=models.SET_NULL,
                                null=True)
     receivers = models.ManyToManyField(User,
-                                       related_name="received_mail_events",
-                                       on_delete=models.SET_NULL,
-                                       null=True)
+                                       related_name="received_mail_events")
     sent_at = models.DateTimeField()
 
     created_at = models.DateTimeField(default=timezone.now)
