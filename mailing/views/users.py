@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from mailing.exceptions import ValidationException
 from mailing.handlers import handle_failure_api
-from mailing.helper import create_user_from_json
+from mailing.helper import create_user_from_json, validate_email_and_get_user
 from mailing.querysets.users import get_user, get_user_by_email
 from mailing.utils import get_json_data
 
@@ -59,6 +59,27 @@ class UsersView(View):
         user.created_at = timezone.now()
         user.updated_at = timezone.now()
         logging.info(f'{context} - User created')
+
+        user.save()
+
+        return JsonResponse(get_json_data(user, context))
+
+    @method_decorator(handle_failure_api)
+    def put(self, request):
+        data = json.loads(request.body)
+
+        email = data.get('email')
+        context = self.get_context('', email)
+
+        user = validate_email_and_get_user(email, context)
+
+        if data.get('name') is not None:
+            user.name = data.get('name')
+        if data.get('dob') is not None:
+            user.dob = data.get('dob')
+        user.updated_at = timezone.now()
+
+        logging.info(f'{context} - User updated')
 
         user.save()
 

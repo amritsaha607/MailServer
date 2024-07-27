@@ -1,4 +1,6 @@
+from mailing.exceptions import NotFoundException
 from mailing.models import User
+from mailing.querysets.users import get_user_by_email
 from mailing.utils import sha512
 
 
@@ -11,4 +13,12 @@ def create_user_from_json(data: dict) -> User:
     if data.get('password') is not None:
         user.password = sha512(data.get('password'))
 
+    return user
+
+
+def validate_email_and_get_user(email, context='') -> User:
+    user = get_user_by_email(email)
+    if user is None:
+        raise NotFoundException(
+            f'{context} - User not found for email {email}')
     return user
