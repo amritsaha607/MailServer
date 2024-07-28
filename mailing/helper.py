@@ -22,3 +22,7 @@ def validate_email_and_get_user(email, context='') -> User:
         raise NotFoundException(
             f'{context} - User not found for email {email}')
     return user
+
+
+def get_user_context_logkey(email):
+    return f'Email: {email}'

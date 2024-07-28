@@ -9,16 +9,14 @@ from django.views.decorators.csrf import csrf_exempt
 
 from mailing.exceptions import ValidationException
 from mailing.handlers import handle_failure_api
-from mailing.helper import create_user_from_json, validate_email_and_get_user
+from mailing.helper import (create_user_from_json, get_user_context_logkey,
+                            validate_email_and_get_user)
 from mailing.querysets.users import get_user, get_user_by_email
-from mailing.utils import get_json_data
+from mailing.utils import get_json_data, sha512
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UsersView(View):
-
-    def get_context(self, user_id, email):
-        return f'user_id: {user_id}, email: {email}'
 
     def validate_get(self, user_id, email, context=''):
         if user_id is None and email is None:
@@ -35,7 +33,7 @@ class UsersView(View):
 
         user_id = params.get('user_id')
         email = params.get('email')
-        context = self.get_context(user_id, email)
+        context = get_user_context_logkey(email)
 
         self.validate_get(user_id, email, context)
 
@@ -51,7 +49,7 @@ class UsersView(View):
         data = json.loads(request.body)
 
         email = data.get('email')
-        context = self.get_context('', email)
+        context = get_user_context_logkey(email)
 
         self.validate_create(email, context)
 
@@ -69,7 +67,7 @@ class UsersView(View):
         data = json.loads(request.body)
 
         email = data.get('email')
-        context = self.get_context('', email)
+        context = get_user_context_logkey(email)
 
         user = validate_email_and_get_user(email, context)
 
@@ -82,5 +80,55 @@ class UsersView(View):
         logging.info(f'{context} - User updated')
 
         user.save()
+
+        return JsonResponse(get_json_data(user, context))
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AuthView(View):
+
+    def validate_get(self, user_id, email, context=''):
+        if user_id is None and email is None:
+            raise ValidationException(
+                f"{context} - Please provide user id or email")
+
+    def validate_create(self, email, context=''):
+        if get_user_by_email(email) is not None:
+            raise ValidationException(f'{context} - email already exists')
+
+    def validate_mode(self, mode, context=''):
+        if mode != 'login' and mode != 'signup':
+            raise ValidationException(f'{context} - Invalid mode {mode}')
+
+    def login(self, email, password, context=''):
+        user = get_user_by_email(email)
+        if user is None or user.password != sha512(password):
+            raise ValidationException(f'{context} - Invalid Credentials')
+        return user
+
+    def signup(self, data):
+        user = create_user_from_json(data)
+        user.created_at = timezone.now()
+        user.updated_at = timezone.now()
+        return user
+
+    @method_decorator(handle_failure_api)
+    def post(self, request):
+        data = json.loads(request.body)
+
+        mode = data.get('auth_mode')
+        email = data.get('email')
+        password = data.get('password')
+        context = get_user_context_logkey(email)
+
+        self.validate_mode(mode, context)
+
+        if mode == 'login':
+            user = self.login(email, password, context)
+        elif mode == 'signup':
+            self.validate_create(email, context)
+            user = self.signup(data)
+            user.save()
+            logging.info(f'{context} - User created')
 
         return JsonResponse(get_json_data(user, context))
