@@ -87,11 +87,6 @@ class UsersView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class AuthView(View):
 
-    def validate_get(self, user_id, email, context=''):
-        if user_id is None and email is None:
-            raise ValidationException(
-                f"{context} - Please provide user id or email")
-
     def validate_create(self, email, context=''):
         if get_user_by_email(email) is not None:
             raise ValidationException(f'{context} - email already exists')
