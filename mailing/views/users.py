@@ -84,7 +84,6 @@ class UsersView(View):
         return JsonResponse(get_json_data(user, context))
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class AuthView(View):
 
     def validate_create(self, email, context=''):
