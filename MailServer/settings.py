@@ -142,3 +142,16 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+# CSRF Allow Domains
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:4200',
+)
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:4200',
+]
+CORS_ALLOW_HEADERS = (
+    'Access-Control-Allow-Credentials',
+    'x-csrftoken'
+)
