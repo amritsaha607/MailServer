@@ -1,4 +1,4 @@
-from mailing.exceptions import ValidationException
+from utils.exceptions import ValidationException
 
 
 def validate_attr_present(payload: dict, attr_name: any, logger_key: str):

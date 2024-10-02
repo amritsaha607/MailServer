@@ -2,7 +2,7 @@ import hashlib
 
 from django.http import JsonResponse
 
-from mailing.exceptions import NotFoundException
+from utils.exceptions import NotFoundException
 
 
 def getInfoFromPartial(partialMethod):

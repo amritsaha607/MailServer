@@ -1,9 +1,8 @@
 import logging
 import traceback
 
-from django.shortcuts import redirect
+from utils.exceptions import NotFoundException, ValidationException
 
-from .exceptions import NotFoundException, ValidationException
 from .utils import get_json_response, getInfoFromPartial
 
 logger = logging.getLogger(__name__)

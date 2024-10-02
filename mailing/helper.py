@@ -1,7 +1,7 @@
-from mailing.exceptions import NotFoundException
 from mailing.models import User
 from mailing.querysets.users import get_user_by_email
 from mailing.utils import sha512
+from utils.exceptions import NotFoundException
 
 
 def create_user_from_json(data: dict) -> User:
