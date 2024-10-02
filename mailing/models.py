@@ -23,11 +23,12 @@ class User(models.Model):
 
 
 class RawEvent(models.Model):
+    chain_id = models.CharField(max_length=36, db_index=True)
     payload = models.TextField()
     received_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f'{self.id} - {self.received_at}'
+        return f'{self.chain_id} - {self.received_at}'
 
 
 class MailEvent(models.Model):
