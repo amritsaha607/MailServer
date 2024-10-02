@@ -66,9 +66,7 @@ class MailItem(models.Model):
     event = models.ForeignKey(MailEvent,
                               on_delete=models.CASCADE,
                               related_name="mail_items")
-    is_sent = models.BooleanField()
     timestamp = models.DateTimeField()
-    content = models.TextField()
 
     created_at = models.DateTimeField(default=timezone.now)
 
