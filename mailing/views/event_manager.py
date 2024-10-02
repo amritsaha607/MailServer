@@ -1,4 +1,8 @@
+import logging
+
 from mailing.models import RawEvent
+
+logger = logging.getLogger(__name__)
 
 
 def save_event(event):
@@ -7,5 +11,5 @@ def save_event(event):
         payload=event
     )
     event.save()
-    print(f'RawEvent {event.id}, {event.chain_id} saved successfully')
+    logger.info(f'RawEvent {event.id}, {event.chain_id} saved successfully')
     return event.chain_id

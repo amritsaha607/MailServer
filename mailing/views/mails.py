@@ -7,7 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 
 from mailing.constants import COMPOSE_MAIL_PAYLOAD_ATTRIBUTES
 from mailing.handlers import handle_failure_api
-from mailing.helper import create_mail_event_from_payload
+from mailing.helper import (create_mail_event_from_payload,
+                            create_mail_items_from_event)
+from mailing.models import MailEvent
 from mailing.querysets.mail_events import get_mail_event
 from mailing.views.event_manager import save_event
 from utils.exceptions import DuplicateRequestException
@@ -16,7 +18,7 @@ from utils.validators import validate_attr_present, validate_attr_type
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ComposeMailView(View):
-    def validate_attributes(self, data, logger_key):
+    def validate_attributes(self, data, logger_key: str):
         validate_attr_present(
             payload=data,
             attr_name=COMPOSE_MAIL_PAYLOAD_ATTRIBUTES,
@@ -28,12 +30,15 @@ class ComposeMailView(View):
             logger_key=logger_key
         )
 
-    def validate_mail_event_not_present(self, chain_id, logger_key):
+    def validate_mail_event_not_present(self, chain_id, logger_key: str):
         if get_mail_event(chain_id) is not None:
             raise DuplicateRequestException(f'{logger_key}MailEvent exists')
 
-    def create_mail_event(self, payload, logger_key):
+    def create_mail_event(self, payload, logger_key: str):
         return create_mail_event_from_payload(payload, logger_key)
+
+    def create_mail_items(self, mail_event: MailEvent, logger_key: str):
+        return create_mail_items_from_event(mail_event, logger_key)
 
     @method_decorator(handle_failure_api)
     def post(self, request):
@@ -52,5 +57,8 @@ class ComposeMailView(View):
         # Create & save mail event
         mail_event = self.create_mail_event(data, logger_key)
         mail_event.save()
+
+        # trigger mail creation job
+        self.create_mail_items(mail_event, logger_key)
 
         return JsonResponse(mail_event.get_json_data())

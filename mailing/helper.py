@@ -1,7 +1,12 @@
-from mailing.models import MailEvent, User
+import logging
+from copy import deepcopy
+
+from mailing.models import MailEvent, MailItem, User
 from mailing.querysets.users import get_user_by_email
 from mailing.utils import sha512
 from utils.exceptions import NotFoundException
+
+logger = logging.getLogger(__name__)
 
 
 def create_user_from_json(data: dict) -> User:
@@ -47,3 +52,35 @@ def create_mail_event_from_payload(payload: dict, logger_key) -> MailEvent:
 
     mail_event.receivers.set(receivers)
     return mail_event
+
+
+def create_mail_item(mail_draft: MailItem, user: User):
+    mail_item = deepcopy(mail_draft)
+    mail_item.user = user
+    return mail_item
+
+
+def create_mail_items_from_event(mail_event: MailEvent, logger_key: str):
+    logger.info(f'{logger_key}START: Creating mailItems')
+    mail_draft = MailItem(
+        chain_id=mail_event.chain_id,
+        event=mail_event,
+        timestamp=mail_event.sent_at,
+    )
+
+    sender = mail_event.sender
+    receivers = mail_event.receivers.all()
+
+    n_items = receivers.count() + 1
+
+    logger.info(
+        f'{logger_key}Creating {n_items} mailItems')
+
+    mail_items = [create_mail_item(mail_draft, user)
+                  for user in [sender, *receivers]]
+
+    mail_items = MailItem.objects.bulk_create(mail_items)
+    logger.info(
+        f'{logger_key}END: Created {n_items} mailItems')
+
+    return mail_items

@@ -72,3 +72,13 @@ class MailItem(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.event.subject}"
+
+    def get_json_data(self):
+        return {
+            'chain_id': self.chain_id,
+            'user': self.user.email,
+            'sender': self.event.sender,
+            'subject': self.event.subject,
+            'content': self.event.content,
+            'timestamp': self.timestamp,
+        }
