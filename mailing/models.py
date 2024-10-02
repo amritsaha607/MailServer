@@ -23,7 +23,7 @@ class User(models.Model):
 
 
 class RawEvent(models.Model):
-    paylaod = models.TextField()
+    payload = models.TextField()
     received_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
