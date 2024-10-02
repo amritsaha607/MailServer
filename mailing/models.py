@@ -22,6 +22,14 @@ class User(models.Model):
         }
 
 
+class RawEvent(models.Model):
+    paylaod = models.TextField()
+    received_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.received_at
+
+
 class MailEvent(models.Model):
     chain_id = models.CharField(max_length=36, db_index=True)
     subject = models.TextField()
