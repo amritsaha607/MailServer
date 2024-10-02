@@ -48,6 +48,15 @@ class MailEvent(models.Model):
     def __str__(self):
         return f"({self.sender}) - {self.subject}"
 
+    def get_json_data(self):
+        return {
+            'chain_id': self.chain_id,
+            'subject': self.subject,
+            'sender': self.sender.email,
+            'receivers': [receiver.email for receiver in self.receivers.all()],
+            'sent_at': self.sent_at,
+        }
+
 
 class MailItem(models.Model):
     chain_id = models.CharField(max_length=36, db_index=True)
