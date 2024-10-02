@@ -152,6 +152,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:4200',
 ]
 CORS_ALLOW_HEADERS = (
+    'content-type',
     'Access-Control-Allow-Credentials',
     'x-csrftoken'
 )
