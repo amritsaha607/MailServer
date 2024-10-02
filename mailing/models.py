@@ -27,7 +27,7 @@ class RawEvent(models.Model):
     received_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.received_at
+        return f'{self.id} - {self.received_at}'
 
 
 class MailEvent(models.Model):
