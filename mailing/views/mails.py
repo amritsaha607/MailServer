@@ -5,7 +5,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from mailing.constants import COMPOSE_MAIL_PAYLOAD_ATTRIBUTES
+from mailing.constants import (COMPOSE_MAIL_PAYLOAD_ATTRIBUTES,
+                               FETCH_MAIL_PAYLOAD_ATTRIBUTES)
 from mailing.handlers import handle_failure_api
 from mailing.helper import (create_mail_event_from_payload,
                             create_mail_items_from_event)

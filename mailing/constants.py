@@ -8,3 +8,9 @@ COMPOSE_MAIL_PAYLOAD_ATTRIBUTES = {
     'content': str,
     'timestamp': str | datetime | date,
 }
+
+FETCH_MAIL_PAYLOAD_ATTRIBUTES = {
+    'ids': str | list,
+    'senders': str | list,
+    'receivers': str | list,
+}
