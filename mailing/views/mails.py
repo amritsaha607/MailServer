@@ -13,16 +13,17 @@ from mailing.helper import (create_mail_event_from_payload,
 from mailing.models import MailEvent
 from mailing.querysets.mail_events import get_mail_event
 from mailing.views.event_manager import save_event
+from utils.constants import VALIDATE_MODE_AND
 from utils.exceptions import DuplicateRequestException
 from utils.validators import validate_attr_present, validate_attr_type
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class ComposeMailView(View):
     def validate_attributes(self, data, logger_key: str):
         validate_attr_present(
             payload=data,
             attr_name=COMPOSE_MAIL_PAYLOAD_ATTRIBUTES,
+            validation_mode=VALIDATE_MODE_AND,
             logger_key=logger_key
         )
         validate_attr_type(
