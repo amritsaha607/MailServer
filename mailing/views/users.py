@@ -7,12 +7,12 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from mailing.exceptions import ValidationException
 from mailing.handlers import handle_failure_api
 from mailing.helper import (create_user_from_json, get_user_context_logkey,
                             validate_email_and_get_user)
 from mailing.querysets.users import get_user, get_user_by_email
 from mailing.utils import get_json_data, sha512
+from utils.exceptions import ValidationException
 
 
 @method_decorator(csrf_exempt, name='dispatch')

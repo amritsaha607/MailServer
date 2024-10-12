@@ -22,6 +22,15 @@ class User(models.Model):
         }
 
 
+class RawEvent(models.Model):
+    chain_id = models.CharField(max_length=36, db_index=True)
+    payload = models.TextField()
+    received_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f'{self.chain_id} - {self.received_at}'
+
+
 class MailEvent(models.Model):
     chain_id = models.CharField(max_length=36, db_index=True)
     subject = models.TextField()
@@ -39,6 +48,15 @@ class MailEvent(models.Model):
     def __str__(self):
         return f"({self.sender}) - {self.subject}"
 
+    def get_json_data(self):
+        return {
+            'chain_id': self.chain_id,
+            'subject': self.subject,
+            'sender': self.sender.email,
+            'receivers': [receiver.email for receiver in self.receivers.all()],
+            'sent_at': self.sent_at,
+        }
+
 
 class MailItem(models.Model):
     chain_id = models.CharField(max_length=36, db_index=True)
@@ -48,11 +66,19 @@ class MailItem(models.Model):
     event = models.ForeignKey(MailEvent,
                               on_delete=models.CASCADE,
                               related_name="mail_items")
-    is_sent = models.BooleanField()
     timestamp = models.DateTimeField()
-    content = models.TextField()
 
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.user} - {self.event.subject}"
+
+    def get_json_data(self):
+        return {
+            'chain_id': self.chain_id,
+            'user': self.user.email,
+            'sender': self.event.sender,
+            'subject': self.event.subject,
+            'content': self.event.content,
+            'timestamp': self.timestamp,
+        }
