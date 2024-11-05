@@ -77,7 +77,7 @@ class MailItem(models.Model):
         return {
             'chain_id': self.chain_id,
             'user': self.user.email,
-            'sender': self.event.sender,
+            'sender': self.event.sender.email,
             'subject': self.event.subject,
             'content': self.event.content,
             'timestamp': self.timestamp,

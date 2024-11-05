@@ -12,8 +12,9 @@ from mailing.helper import (create_mail_event_from_payload,
                             create_mail_items_from_event)
 from mailing.models import MailEvent
 from mailing.querysets.mail_events import get_mail_event
+from mailing.querysets.mails import filter_emails
 from mailing.views.event_manager import save_event
-from utils.constants import VALIDATE_MODE_AND
+from utils.constants import VALIDATE_MODE_AND, VALIDATE_MODE_OR
 from utils.exceptions import DuplicateRequestException
 from utils.validators import validate_attr_present, validate_attr_type
 
@@ -64,3 +65,36 @@ class ComposeMailView(View):
         self.create_mail_items(mail_event, logger_key)
 
         return JsonResponse(mail_event.get_json_data())
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class FetchMailView(View):
+
+    def validate_attributes(self, data, logger_key: str):
+        validate_attr_present(
+            payload=data,
+            attr_name=FETCH_MAIL_PAYLOAD_ATTRIBUTES,
+            validation_mode=VALIDATE_MODE_OR,
+            logger_key=logger_key
+        )
+        validate_attr_type(
+            payload=data,
+            attr_name_type_mapping=FETCH_MAIL_PAYLOAD_ATTRIBUTES,
+            logger_key=logger_key
+        )
+
+    @method_decorator(handle_failure_api)
+    def post(self, request):
+
+        data = json.loads(request.body)
+        logger_key = f'Fetch Mail {data}: '
+
+        self.validate_attributes(data, logger_key)
+
+        ids = data.get('ids')
+        senders = data.get('senders')
+        receivers = data.get('receivers')
+
+        mails = filter_emails(ids, senders, receivers)
+
+        return JsonResponse([mail.get_json_data() for mail in mails], safe=False)

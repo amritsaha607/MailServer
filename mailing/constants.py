@@ -10,7 +10,7 @@ COMPOSE_MAIL_PAYLOAD_ATTRIBUTES = {
 }
 
 FETCH_MAIL_PAYLOAD_ATTRIBUTES = {
-    'ids': str | list,
-    'senders': str | list,
-    'receivers': str | list,
+    'ids': list,
+    'senders': list,
+    'receivers': list,
 }
