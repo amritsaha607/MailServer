@@ -19,6 +19,7 @@ from utils.exceptions import DuplicateRequestException
 from utils.validators import validate_attr_present, validate_attr_type
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ComposeMailView(View):
     def validate_attributes(self, data, logger_key: str):
         validate_attr_present(
