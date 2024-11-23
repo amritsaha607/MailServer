@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -156,3 +157,10 @@ CORS_ALLOW_HEADERS = (
     'Access-Control-Allow-Credentials',
     'x-csrftoken'
 )
+
+# Django Channels
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
