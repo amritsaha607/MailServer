@@ -1,5 +1,8 @@
 import json
+import logging
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -7,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from mailing.constants import (COMPOSE_MAIL_PAYLOAD_ATTRIBUTES,
                                FETCH_MAIL_PAYLOAD_ATTRIBUTES)
+from mailing.consumers.utils import get_channel_list, get_group_name
 from mailing.handlers import handle_failure_api
 from mailing.helper import (create_mail_event_from_payload,
                             create_mail_items_from_event)
@@ -17,6 +21,9 @@ from mailing.views.event_manager import save_event
 from utils.constants import VALIDATE_MODE_AND, VALIDATE_MODE_OR
 from utils.exceptions import DuplicateRequestException
 from utils.validators import validate_attr_present, validate_attr_type
+
+logger = logging.getLogger(__name__)
+channel_layer = get_channel_layer()
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -44,6 +51,36 @@ class ComposeMailView(View):
     def create_mail_items(self, mail_event: MailEvent, logger_key: str):
         return create_mail_items_from_event(mail_event, logger_key)
 
+    def add_to_consumer_group(self, mail_event):
+        group_name = get_group_name(mail_event.chain_id)
+        for user in [mail_event.sender, *mail_event.receivers.all()]:
+            channel_list = get_channel_list(user.email)
+            for channel_name in channel_list:
+                async_to_sync(channel_layer.group_add)(
+                    group_name,
+                    channel_name,
+                )
+            logger.info(f'Added user {user.email} to group {group_name}')
+
+    def send_outgoing_event(self, mail_event):
+        group_name = get_group_name(mail_event.chain_id)
+        event_data = {
+            'mode': 'sent_mail_event',
+            'sender': mail_event.sender.email,
+            'receivers': [receiver.email for receiver in mail_event.receivers.all()],
+            'subject': mail_event.subject,
+            'content': mail_event.content,
+            'sent_at': str(mail_event.sent_at),
+        }
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                "type": "send_mail_event_notification",
+                "data": event_data
+            }
+        )
+        logger.info(f'Sent outgoing event to group {group_name}')
+
     @method_decorator(handle_failure_api)
     def post(self, request):
         data = json.loads(request.body)
@@ -64,6 +101,12 @@ class ComposeMailView(View):
 
         # trigger mail creation job
         self.create_mail_items(mail_event, logger_key)
+
+        # Add users to a new group
+        self.add_to_consumer_group(mail_event)
+
+        # Send out group event
+        self.send_outgoing_event(mail_event)
 
         return JsonResponse(mail_event.get_json_data())
 
