@@ -38,12 +38,7 @@ class MailConsumer(AsyncJsonWebsocketConsumer):
         logger.info(f'Received json content: {content}')
         mode = content.get('mode')
 
-        if mode == 'boot':
-            # Fetch all email items
-            mails = await self.fetch_mail_events()
-
-            # For all mail items create group and add user to the corresponding group
-            await self.add_to_multiple_mail_groups(mails)
+        await self.execute_action(mode)
 
     @database_sync_to_async
     def fetch_mail_events(self):
@@ -79,3 +74,16 @@ class MailConsumer(AsyncJsonWebsocketConsumer):
 
         # Send message to WebSocket
         await self.send_json(event_data)
+
+    async def execute_action(self, mode):
+        if mode == 'boot':
+            await self.execute_boot_action()
+
+    # Action methods
+
+    async def execute_boot_action(self):
+        # Fetch all email items
+        mails = await self.fetch_mail_events()
+
+        # For all mail items create group and add user to the corresponding group
+        await self.add_to_multiple_mail_groups(mails)
