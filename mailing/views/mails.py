@@ -65,7 +65,6 @@ class ComposeMailView(View):
     def send_outgoing_event(self, mail_event):
         group_name = get_group_name(mail_event.chain_id)
         event_data = {
-            'mode': 'sent_mail_event',
             'sender': mail_event.sender.email,
             'receivers': [receiver.email for receiver in mail_event.receivers.all()],
             'subject': mail_event.subject,
