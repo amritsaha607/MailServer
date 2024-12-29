@@ -34,13 +34,22 @@ CORS_ALLOWED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+    # Realtime notitification applications
+    'channels',
+    'daphne',
+
+    # Custom Application
     'mailing',
+
+    # Django Applications
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Security
     'corsheaders',
 ]
 
@@ -156,3 +165,17 @@ CORS_ALLOW_HEADERS = (
     'Access-Control-Allow-Credentials',
     'x-csrftoken'
 )
+
+# Django Channels
+ASGI_APPLICATION = 'MailServer.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                ("127.0.0.1", 6379)
+            ],
+        },
+    },
+}

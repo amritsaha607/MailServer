@@ -21,6 +21,9 @@ class User(models.Model):
             'dob': self.dob,
         }
 
+    def get_mail_events(self):
+        return (self.sent_mail_events.all() | self.received_mail_events.all()).distinct()
+
 
 class RawEvent(models.Model):
     chain_id = models.CharField(max_length=36, db_index=True)
