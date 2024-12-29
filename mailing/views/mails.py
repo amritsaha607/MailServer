@@ -138,7 +138,7 @@ class FetchMailView(View):
         ids = data.get('ids')
         senders = data.get('senders')
         receivers = data.get('receivers')
-        latest_first = data.get('latest_first', False)
+        latest_first = data.get('latest_first', True)
 
         mails = filter_emails(ids, senders, receivers, latest_first)
 
