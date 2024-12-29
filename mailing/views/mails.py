@@ -138,7 +138,8 @@ class FetchMailView(View):
         ids = data.get('ids')
         senders = data.get('senders')
         receivers = data.get('receivers')
+        latest_first = data.get('latest_first', False)
 
-        mails = filter_emails(ids, senders, receivers)
+        mails = filter_emails(ids, senders, receivers, latest_first)
 
         return JsonResponse([mail.get_json_data() for mail in mails], safe=False)
