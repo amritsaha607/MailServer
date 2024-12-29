@@ -13,4 +13,5 @@ FETCH_MAIL_PAYLOAD_ATTRIBUTES = {
     'ids': list,
     'senders': list,
     'receivers': list,
+    'latest_first': bool,
 }

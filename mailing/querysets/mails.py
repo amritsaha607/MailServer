@@ -1,7 +1,7 @@
 from mailing.models import MailItem
 
 
-def filter_emails(ids: list | None, senders: list | None, receivers: list | None):
+def filter_emails(ids: list | None, senders: list | None, receivers: list | None, latest_first: bool = True):
     mails = MailItem.objects
 
     # Filter by id
@@ -16,5 +16,9 @@ def filter_emails(ids: list | None, senders: list | None, receivers: list | None
     # Filter by senders
     if isinstance(senders, list) and len(senders) > 0:
         mails = mails.filter(event__sender__email__in=senders)
+
+    # Order by latest_first
+    if latest_first is True:
+        mails = mails.order_by('-timestamp')
 
     return mails
