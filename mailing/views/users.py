@@ -10,7 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 from mailing.handlers import handle_failure_api
 from mailing.helper import (create_user_from_json, get_user_context_logkey,
                             validate_email_and_get_user)
-from mailing.querysets.users import get_user, get_user_by_email
+from mailing.querysets.users import (get_user, get_user_by_email,
+                                     search_user_emails_by_email_query)
 from mailing.utils import get_json_data, sha512
 from utils.exceptions import ValidationException
 
@@ -127,3 +128,29 @@ class AuthView(View):
             logging.info(f'{context} - User created')
 
         return JsonResponse(get_json_data(user, context))
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class EmailSearchView(View):
+
+    def validate_get(self, query: str, context=''):
+        if query is None:
+            raise ValidationException(
+                f"{context} - Please provide user id or email")
+
+        if len(query) < 3:
+            raise ValidationException(f"{context} - Query length less than 3")
+
+    @method_decorator(handle_failure_api)
+    def get(self, request):
+        params = request.GET
+
+        query = params.get('query')
+        context = get_user_context_logkey(query)
+
+        self.validate_get(query, context)
+
+        email_list = search_user_emails_by_email_query(query)
+        return JsonResponse({
+            'emails': email_list,
+        })
