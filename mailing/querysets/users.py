@@ -15,5 +15,5 @@ def get_user_by_email(email) -> User:
 
 def search_user_emails_by_email_query(query) -> list:
     emails_qset = User.objects.filter(
-        email__startswith=query).values_list('email', flat=True)
+        email__contains=query).values_list('email', flat=True)
     return list(emails_qset)

@@ -37,7 +37,8 @@ def create_mail_event_from_payload(payload: dict, logger_key) -> MailEvent:
     sender_email = payload.get('sender')
     sender = validate_email_and_get_user(sender_email, logger_key)
 
-    receivers = payload.get('receivers')
+    receivers = list(set([receiver.strip()
+                     for receiver in payload.get('receivers')]))
     receivers = [validate_email_and_get_user(
         email, logger_key) for email in receivers]
 
